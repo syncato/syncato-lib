@@ -1,24 +1,29 @@
+// Copyright 2015 The Syncato Authors.  All rights reserved.
+// Use of this source code is governed by a AGPL
+// license that can be found in the LICENSE file.
+
+// Package logger defines the logger used by the daemon and libraries to log information.
 package logger
 
 import (
-	"github.com/Sirupsen/logrus"
-	"github.com/gorilla/context"
-	"net/http"
 	"os"
+
+	"github.com/Sirupsen/logrus"
 )
 
-type Fields map[string]interface{}
-
+// Logger is responsible for log information to a target supported by the log implementation
 type Logger struct {
-	rid  string
-	log  *logrus.Logger
-	comp string
+	rid string         // the request id
+	log *logrus.Logger // the log implementation
 }
 
+// NewLogger creates a logger instance with a custom log level
+// The log level specifies from which level start logging.
+// The possible values for the log level are: 0=panic,1=fatal,2=error,3=warning,4=info,5=debug
 func NewLogger(rid string, level int) *Logger {
 	logr := logrus.New()
 	logr.Level = logrus.Level(level)
-	log := Logger{rid, logr, ""}
+	log := Logger{rid, logr}
 	return &log
 }
 
@@ -45,8 +50,4 @@ func (l *Logger) Fatal(msg interface{}, fields map[string]interface{}) {
 func (l *Logger) Panic(msg interface{}, fields map[string]interface{}) {
 	host, _ := os.Hostname()
 	l.log.WithField("RID", l.rid).WithField("HOST", host).WithFields(fields).Panic(msg)
-}
-
-func GetLoggerFromReq(r *http.Request) (log *Logger) {
-	return context.Get(r, "log").(*Logger)
 }
